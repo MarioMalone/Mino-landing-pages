@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://minomino.dev/sitemap.xml

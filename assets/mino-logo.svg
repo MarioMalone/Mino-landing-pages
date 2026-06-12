@@ -1,0 +1,28 @@
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <title>Mino logo</title>
+  <defs>
+    <linearGradient id="mino-bg" x1="96" y1="64" x2="416" y2="448" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#4A90D9"/>
+      <stop offset="1" stop-color="#24C1B7"/>
+    </linearGradient>
+    <linearGradient id="mino-sheet" x1="164" y1="104" x2="374" y2="408" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#FFFFFF"/>
+      <stop offset="1" stop-color="#EEF7FF"/>
+    </linearGradient>
+    <filter id="soft-shadow" x="72" y="72" width="368" height="400" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+      <feDropShadow dx="0" dy="18" stdDeviation="18" flood-color="#0B2A3D" flood-opacity="0.22"/>
+    </filter>
+  </defs>
+
+  <rect x="48" y="48" width="416" height="416" rx="96" fill="url(#mino-bg)"/>
+
+  <g filter="url(#soft-shadow)">
+    <path d="M160 112C160 98.7452 170.745 88 184 88H312L384 160V400C384 413.255 373.255 424 360 424H184C170.745 424 160 413.255 160 400V112Z" fill="url(#mino-sheet)"/>
+    <path d="M312 88V144C312 157.255 322.745 168 336 168H384L312 88Z" fill="#D9ECFF"/>
+  </g>
+
+  <path d="M204 318V220H232L256 260L280 220H308V318H276V274L263 296H249L236 274V318H204Z" fill="#1C2B36"/>
+  <path d="M320 220H352V318H320V220Z" fill="#24A9B7"/>
+  <path d="M200 356H316" stroke="#4A90D9" stroke-width="18" stroke-linecap="round"/>
+  <path d="M200 388H284" stroke="#B7D8F3" stroke-width="18" stroke-linecap="round"/>
+</svg>

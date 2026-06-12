@@ -1,0 +1,592 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Mino - A lightweight Markdown WYSIWYG editor for Windows. Fast, minimal, and powerful." />
+  <meta name="author" content="Mino Team" />
+  <meta name="theme-color" content="#4A90D9" />
+
+  <!-- Open Graph -->
+  <meta property="og:title" content="Mino - Lightweight Markdown Editor" />
+  <meta property="og:description" content="A lightweight Markdown WYSIWYG editor for Windows. Fast, minimal, and powerful." />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://minomino.dev" />
+  <meta property="og:image" content="https://minomino.dev/assets/og-image.png" />
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Mino - Lightweight Markdown Editor" />
+  <meta name="twitter:description" content="A lightweight Markdown WYSIWYG editor for Windows. Fast, minimal, and powerful." />
+  <meta name="twitter:image" content="https://minomino.dev/assets/og-image.png" />
+
+  <title>Mino - Lightweight Markdown Editor</title>
+
+  <!-- Canonical URL -->
+  <link rel="canonical" href="https://minomino.dev" />
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/x-icon" href="favicon.ico" />
+
+  <!-- Tailwind CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: { DEFAULT: '#4A90D9', dark: '#3a7bc8', light: '#569cd6' },
+            accent: { DEFAULT: '#24C1B7', dark: '#1a9e96' },
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Prevent dark mode FOUC -->
+  <script>
+    (function() {
+      var t = localStorage.getItem('mino-theme');
+      if (t === 'dark' || (!t && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+        document.documentElement.classList.add('dark');
+      }
+    })();
+  </script>
+
+  <!-- Custom styles -->
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <!-- Navbar -->
+  <nav id="navbar" class="fixed top-0 left-0 right-0 z-50 h-16 bg-white/80 dark:bg-[#1e1e1e]/80 backdrop-blur-md border-b border-gray-200/60 dark:border-[#373737]/60 transition-all duration-300">
+    <div class="max-w-6xl mx-auto h-full px-6 flex items-center justify-between">
+      <!-- Left: Logo + Brand -->
+      <a href="#" class="flex items-center gap-2.5 group">
+        <img src="assets/mino-logo.svg" alt="Mino logo" class="w-8 h-8 transition-transform duration-300 group-hover:rotate-6" />
+        <span class="text-lg font-bold text-gray-800 dark:text-gray-100 tracking-tight">Mino</span>
+      </a>
+
+      <!-- Right: Desktop Nav -->
+      <div class="hidden md:flex items-center gap-8">
+        <a href="#features" class="nav-link text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-brand transition-colors" data-zh="功能" data-en="Features">功能</a>
+        <a href="#download" class="nav-link text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-brand transition-colors" data-zh="下载" data-en="Download">下载</a>
+        <a href="https://github.com/MarioMinoDev/mino" target="_blank" rel="noopener" class="text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-brand transition-colors">GitHub</a>
+        <button id="lang-toggle" class="px-3 py-1 text-sm font-medium rounded-md border border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-400 hover:border-brand hover:text-brand transition-all cursor-pointer select-none" aria-label="Toggle language">中</button>
+        <button id="theme-toggle" aria-label="Toggle theme">
+          <svg class="icon-sun w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+          <svg class="icon-moon w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/></svg>
+        </button>
+      </div>
+
+      <!-- Mobile: Hamburger -->
+      <button id="menu-toggle" class="md:hidden flex flex-col gap-1.5 p-2 cursor-pointer" aria-label="Toggle menu" aria-expanded="false">
+        <span class="hamburger-line w-5 h-0.5 bg-gray-700 dark:bg-gray-300 rounded-full transition-all duration-300 origin-center"></span>
+        <span class="hamburger-line w-5 h-0.5 bg-gray-700 dark:bg-gray-300 rounded-full transition-all duration-300"></span>
+        <span class="hamburger-line w-5 h-0.5 bg-gray-700 dark:bg-gray-300 rounded-full transition-all duration-300 origin-center"></span>
+      </button>
+    </div>
+
+    <!-- Mobile Menu -->
+    <div id="mobile-menu" class="md:hidden hidden absolute top-16 left-0 right-0 bg-white/95 dark:bg-[#1e1e1e]/95 backdrop-blur-md border-b border-gray-200/60 dark:border-[#373737]/60 shadow-lg">
+      <div class="flex flex-col px-6 py-4 gap-4">
+        <a href="#features" class="nav-link text-base font-medium text-gray-700 dark:text-gray-300 hover:text-brand transition-colors" data-zh="功能" data-en="Features">功能</a>
+        <a href="#download" class="nav-link text-base font-medium text-gray-700 dark:text-gray-300 hover:text-brand transition-colors" data-zh="下载" data-en="Download">下载</a>
+        <a href="https://github.com/MarioMinoDev/mino" target="_blank" rel="noopener" class="text-base font-medium text-gray-700 dark:text-gray-300 hover:text-brand transition-colors">GitHub</a>
+        <div class="flex items-center gap-2 self-start">
+          <button id="lang-toggle-mobile" class="px-3 py-1 text-sm font-medium rounded-md border border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-400 hover:border-brand hover:text-brand transition-all cursor-pointer select-none" aria-label="Toggle language">中</button>
+          <button id="theme-toggle-mobile" aria-label="Toggle theme">
+            <svg class="icon-sun w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+            <svg class="icon-moon w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Hero -->
+  <section id="hero" class="relative min-h-screen flex items-center overflow-hidden bg-gradient-to-b from-white via-slate-50 to-blue-50/40 dark:from-[#1e1e1e] dark:via-[#222222] dark:to-[#1e1e1e]">
+    <!-- Background decoration -->
+    <div class="absolute inset-0 overflow-hidden pointer-events-none">
+      <div class="absolute -top-40 -right-40 w-[600px] h-[600px] rounded-full bg-gradient-to-br from-brand/8 to-accent/8 blur-3xl"></div>
+      <div class="absolute -bottom-20 -left-20 w-[400px] h-[400px] rounded-full bg-gradient-to-tr from-accent/6 to-brand/6 blur-3xl"></div>
+    </div>
+
+    <div class="relative max-w-6xl mx-auto px-6 pt-24 pb-16 w-full">
+      <div class="flex flex-col lg:flex-row items-center gap-12 lg:gap-16">
+        <!-- Left: Text Content -->
+        <div class="flex-1 text-center lg:text-left">
+          <h1 class="hero-title text-6xl sm:text-7xl lg:text-8xl font-extrabold tracking-tight mb-6">
+            <span class="bg-gradient-to-r from-brand via-brand-light to-accent bg-clip-text text-transparent">Mino</span>
+          </h1>
+
+          <p class="hero-subtitle text-xl sm:text-2xl text-gray-600 dark:text-gray-400 mb-10 leading-relaxed" data-zh="轻量级 Markdown 即时预览编辑器" data-en="A Lightweight Markdown WYSIWYG Editor">轻量级 Markdown 即时预览编辑器</p>
+
+          <div class="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
+            <a href="https://github.com/MarioMinoDev/mino/releases" target="_blank" rel="noopener" class="hero-btn inline-flex items-center justify-center gap-2 px-8 py-3.5 bg-gradient-to-r from-brand to-brand-dark text-white font-semibold rounded-lg shadow-lg shadow-brand/25 hover:shadow-xl hover:shadow-brand/30 hover:-translate-y-0.5 transition-all duration-300">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5m0 0l5-5m-5 5V3"/></svg>
+              <span data-zh="下载安装" data-en="Download">下载安装</span>
+            </a>
+            <a href="https://github.com/MarioMinoDev/mino" target="_blank" rel="noopener" class="hero-btn inline-flex items-center justify-center gap-2 px-8 py-3.5 border-2 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 font-semibold rounded-lg hover:border-brand hover:text-brand hover:-translate-y-0.5 transition-all duration-300">
+              <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+              <span>GitHub</span>
+            </a>
+          </div>
+        </div>
+
+        <!-- Right: App Screenshot Placeholder -->
+        <div class="flex-1 w-full max-w-xl">
+          <div class="screenshot-container relative rounded-2xl bg-gradient-to-br from-brand/5 to-accent/5 border border-gray-200/60 dark:border-[#373737]/60 shadow-2xl shadow-gray-200/40 dark:shadow-black/40 overflow-hidden aspect-[4/3]">
+            <!-- Window chrome -->
+            <div class="flex items-center gap-1.5 px-4 py-3 bg-gray-50/80 dark:bg-[#282828]/80 border-b border-gray-200/40 dark:border-[#373737]/40">
+              <span class="w-3 h-3 rounded-full bg-red-400/80"></span>
+              <span class="w-3 h-3 rounded-full bg-yellow-400/80"></span>
+              <span class="w-3 h-3 rounded-full bg-green-400/80"></span>
+            </div>
+            <!-- Placeholder content -->
+            <div class="flex items-center justify-center h-[calc(100%-44px)]">
+              <div class="text-center opacity-40">
+                <svg class="w-16 h-16 mx-auto mb-3 text-gray-400" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909M3.75 21h16.5A2.25 2.25 0 0022.5 18.75V5.25A2.25 2.25 0 0020.25 3H3.75A2.25 2.25 0 001.5 5.25v13.5A2.25 2.25 0 003.75 21z"/></svg>
+                <p class="text-sm text-gray-400 font-medium" data-zh="应用截图" data-en="App Screenshot">应用截图</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+  <!-- Stats -->
+  <section id="stats" class="py-16 bg-white dark:bg-[#1e1e1e]" aria-label="Performance stats">
+    <div class="max-w-4xl mx-auto px-6">
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-8 sm:gap-0 sm:divide-x sm:divide-gray-200 dark:divide-[#373737]">
+        <!-- Package Size -->
+        <div class="text-center px-6">
+          <p class="stat-number text-5xl sm:text-6xl font-extrabold bg-gradient-to-r from-brand to-accent bg-clip-text text-transparent" data-target="20" data-prefix="< " data-suffix="MB">&lt; 20MB</p>
+          <p class="mt-2 text-sm sm:text-base text-gray-500 dark:text-gray-400 font-medium" data-zh="安装包大小" data-en="Package Size">安装包大小</p>
+        </div>
+        <!-- Cold Start -->
+        <div class="text-center px-6">
+          <p class="stat-number text-5xl sm:text-6xl font-extrabold bg-gradient-to-r from-brand to-accent bg-clip-text text-transparent" data-target="500" data-prefix="< " data-suffix="ms">&lt; 500ms</p>
+          <p class="mt-2 text-sm sm:text-base text-gray-500 dark:text-gray-400 font-medium" data-zh="冷启动速度" data-en="Cold Start">冷启动速度</p>
+        </div>
+        <!-- Idle Memory -->
+        <div class="text-center px-6">
+          <p class="stat-number text-5xl sm:text-6xl font-extrabold bg-gradient-to-r from-brand to-accent bg-clip-text text-transparent" data-target="120" data-prefix="" data-suffix="MB">120MB</p>
+          <p class="mt-2 text-sm sm:text-base text-gray-500 dark:text-gray-400 font-medium" data-zh="空载内存" data-en="Idle Memory">空载内存</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Features -->
+  <section id="features" class="py-20 bg-gradient-to-b from-white to-slate-50 dark:from-[#1e1e1e] dark:to-[#252525]">
+    <div class="max-w-6xl mx-auto px-6">
+      <!-- Section Title -->
+      <div class="text-center mb-14">
+        <h2 class="text-3xl sm:text-4xl font-bold text-gray-800 dark:text-gray-100" data-zh="核心功能" data-en="Core Features">核心功能</h2>
+        <div class="mx-auto mt-3 w-12 h-1 rounded-full bg-gradient-to-r from-brand to-accent"></div>
+      </div>
+
+      <!-- Card Grid -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        <!-- WYSIWYG Editing -->
+        <div class="feature-card group bg-white dark:bg-[#252525] rounded-xl border border-gray-200/80 dark:border-[#373737]/80 p-6 transition-all duration-300 hover:shadow-lg hover:shadow-brand/5 hover:-translate-y-1">
+          <div class="text-3xl mb-4" aria-hidden="true">✏️</div>
+          <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-2" data-zh="即时预览" data-en="WYSIWYG Editing">即时预览</h3>
+          <p class="text-sm text-gray-500 dark:text-gray-400 leading-relaxed" data-zh="Typora 风格单栏实时预览，所见即所得" data-en="Typora-style single-pane live preview, what you see is what you get">Typora 风格单栏实时预览，所见即所得</p>
+        </div>
+
+        <!-- Dual-Pane Mode -->
+        <div class="feature-card group bg-white dark:bg-[#252525] rounded-xl border border-gray-200/80 dark:border-[#373737]/80 p-6 transition-all duration-300 hover:shadow-lg hover:shadow-brand/5 hover:-translate-y-1">
+          <div class="text-3xl mb-4" aria-hidden="true">📑</div>
+          <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-2" data-zh="双栏编辑" data-en="Dual-Pane Mode">双栏编辑</h3>
+          <p class="text-sm text-gray-500 dark:text-gray-400 leading-relaxed" data-zh="CodeMirror 6 源码 + Milkdown 预览，同步滚动" data-en="CodeMirror 6 source + Milkdown preview, synchronized scrolling">CodeMirror 6 源码 + Milkdown 预览，同步滚动</p>
+        </div>
+
+        <!-- GFM Extensions -->
+        <div class="feature-card group bg-white dark:bg-[#252525] rounded-xl border border-gray-200/80 dark:border-[#373737]/80 p-6 transition-all duration-300 hover:shadow-lg hover:shadow-brand/5 hover:-translate-y-1">
+          <div class="text-3xl mb-4" aria-hidden="true">📊</div>
+          <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-2" data-zh="GFM 语法" data-en="GFM Extensions">GFM 语法</h3>
+          <p class="text-sm text-gray-500 dark:text-gray-400 leading-relaxed" data-zh="表格、任务列表、删除线等 GitHub 风格扩展" data-en="Tables, task lists, strikethrough and more GitHub-flavored extensions">表格、任务列表、删除线等 GitHub 风格扩展</p>
+        </div>
+
+        <!-- Math Formulas -->
+        <div class="feature-card group bg-white dark:bg-[#252525] rounded-xl border border-gray-200/80 dark:border-[#373737]/80 p-6 transition-all duration-300 hover:shadow-lg hover:shadow-brand/5 hover:-translate-y-1">
+          <div class="text-3xl mb-4" aria-hidden="true">🧮</div>
+          <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-2" data-zh="数学公式" data-en="Math Formulas">数学公式</h3>
+          <p class="text-sm text-gray-500 dark:text-gray-400 leading-relaxed" data-zh="KaTeX 行内/块级公式，双击编辑" data-en="KaTeX inline/block formulas, double-click to edit">KaTeX 行内/块级公式，双击编辑</p>
+        </div>
+
+        <!-- Mermaid Diagrams -->
+        <div class="feature-card group bg-white dark:bg-[#252525] rounded-xl border border-gray-200/80 dark:border-[#373737]/80 p-6 transition-all duration-300 hover:shadow-lg hover:shadow-brand/5 hover:-translate-y-1">
+          <div class="text-3xl mb-4" aria-hidden="true">📈</div>
+          <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-2" data-zh="Mermaid 图表" data-en="Mermaid Diagrams">Mermaid 图表</h3>
+          <p class="text-sm text-gray-500 dark:text-gray-400 leading-relaxed" data-zh="流程图、时序图、甘特图等，双击编辑" data-en="Flowcharts, sequence diagrams, Gantt charts and more, double-click to edit">流程图、时序图、甘特图等，双击编辑</p>
+        </div>
+
+        <!-- Syntax Highlighting -->
+        <div class="feature-card group bg-white dark:bg-[#252525] rounded-xl border border-gray-200/80 dark:border-[#373737]/80 p-6 transition-all duration-300 hover:shadow-lg hover:shadow-brand/5 hover:-translate-y-1">
+          <div class="text-3xl mb-4" aria-hidden="true">🎨</div>
+          <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-2" data-zh="语法高亮" data-en="Syntax Highlighting">语法高亮</h3>
+          <p class="text-sm text-gray-500 dark:text-gray-400 leading-relaxed" data-zh="40+ 编程语言代码块高亮显示" data-en="40+ programming languages code block highlighting">40+ 编程语言代码块高亮显示</p>
+        </div>
+
+        <!-- File Tree -->
+        <div class="feature-card group bg-white dark:bg-[#252525] rounded-xl border border-gray-200/80 dark:border-[#373737]/80 p-6 transition-all duration-300 hover:shadow-lg hover:shadow-brand/5 hover:-translate-y-1">
+          <div class="text-3xl mb-4" aria-hidden="true">📁</div>
+          <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-2" data-zh="文件树" data-en="File Tree">文件树</h3>
+          <p class="text-sm text-gray-500 dark:text-gray-400 leading-relaxed" data-zh="侧栏目录浏览器，快速导航文件" data-en="Sidebar directory browser for quick file navigation">侧栏目录浏览器，快速导航文件</p>
+        </div>
+
+        <!-- Pandoc Export -->
+        <div class="feature-card group bg-white dark:bg-[#252525] rounded-xl border border-gray-200/80 dark:border-[#373737]/80 p-6 transition-all duration-300 hover:shadow-lg hover:shadow-brand/5 hover:-translate-y-1">
+          <div class="text-3xl mb-4" aria-hidden="true">📤</div>
+          <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-2" data-zh="Pandoc 导出" data-en="Pandoc Export">Pandoc 导出</h3>
+          <p class="text-sm text-gray-500 dark:text-gray-400 leading-relaxed" data-zh="导出 docx / html / pdf / latex / rst / epub" data-en="Export to docx / html / pdf / latex / rst / epub">导出 docx / html / pdf / latex / rst / epub</p>
+        </div>
+
+        <!-- Dark Mode -->
+        <div class="feature-card group bg-white dark:bg-[#252525] rounded-xl border border-gray-200/80 dark:border-[#373737]/80 p-6 transition-all duration-300 hover:shadow-lg hover:shadow-brand/5 hover:-translate-y-1">
+          <div class="text-3xl mb-4" aria-hidden="true">🌙</div>
+          <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-2" data-zh="暗色主题" data-en="Dark Mode">暗色主题</h3>
+          <p class="text-sm text-gray-500 dark:text-gray-400 leading-relaxed" data-zh="跟随系统或手动切换，护眼舒适" data-en="Follows system or manual toggle, easy on the eyes">跟随系统或手动切换，护眼舒适</p>
+        </div>
+
+        <!-- Internationalization -->
+        <div class="feature-card group bg-white dark:bg-[#252525] rounded-xl border border-gray-200/80 dark:border-[#373737]/80 p-6 transition-all duration-300 hover:shadow-lg hover:shadow-brand/5 hover:-translate-y-1">
+          <div class="text-3xl mb-4" aria-hidden="true">🌐</div>
+          <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-2" data-zh="多语言" data-en="Internationalization">多语言</h3>
+          <p class="text-sm text-gray-500 dark:text-gray-400 leading-relaxed" data-zh="中英文界面，150+ 词条完整翻译" data-en="Chinese/English interface, 150+ entries fully translated">中英文界面，150+ 词条完整翻译</p>
+        </div>
+
+        <!-- Auto-Save -->
+        <div class="feature-card group bg-white dark:bg-[#252525] rounded-xl border border-gray-200/80 dark:border-[#373737]/80 p-6 transition-all duration-300 hover:shadow-lg hover:shadow-brand/5 hover:-translate-y-1">
+          <div class="text-3xl mb-4" aria-hidden="true">💾</div>
+          <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-2" data-zh="自动保存" data-en="Auto-Save">自动保存</h3>
+          <p class="text-sm text-gray-500 dark:text-gray-400 leading-relaxed" data-zh="30 秒定时保存 + 失焦保存，永不丢失" data-en="30-second timer + save on blur, never lose your work">30 秒定时保存 + 失焦保存，永不丢失</p>
+        </div>
+
+        <!-- Keyboard Shortcuts -->
+        <div class="feature-card group bg-white dark:bg-[#252525] rounded-xl border border-gray-200/80 dark:border-[#373737]/80 p-6 transition-all duration-300 hover:shadow-lg hover:shadow-brand/5 hover:-translate-y-1">
+          <div class="text-3xl mb-4" aria-hidden="true">⌨️</div>
+          <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-2" data-zh="快捷键" data-en="Keyboard Shortcuts">快捷键</h3>
+          <p class="text-sm text-gray-500 dark:text-gray-400 leading-relaxed" data-zh="Ctrl+B/I/S/F 等 14+ 快捷操作" data-en="Ctrl+B/I/S/F and 14+ more shortcuts">Ctrl+B/I/S/F 等 14+ 快捷操作</p>
+        </div>
+      </div>
+    </div>
+  </section>
+  <!-- Screenshot -->
+  <section id="screenshot" class="py-20 bg-gradient-to-b from-slate-50 to-white dark:from-[#252525] dark:to-[#1e1e1e]">
+    <div class="max-w-4xl mx-auto px-6">
+      <!-- Section Title -->
+      <div class="text-center mb-12">
+        <h2 class="text-3xl sm:text-4xl font-bold text-gray-800 dark:text-gray-100" data-zh="应用预览" data-en="App Preview">应用预览</h2>
+        <div class="mx-auto mt-3 w-12 h-1 rounded-full bg-gradient-to-r from-brand to-accent"></div>
+      </div>
+
+      <!-- Screenshot mockup -->
+      <div class="screenshot-mockup relative mx-auto max-w-[900px] rounded-xl overflow-hidden shadow-2xl shadow-gray-300/50 dark:shadow-black/50 border border-gray-200/60 dark:border-[#373737]/60">
+        <!-- Window chrome bar -->
+        <div class="flex items-center gap-2 px-4 py-2.5 bg-gray-100 dark:bg-[#2a2a2a] border-b border-gray-200/80 dark:border-[#373737]/80" aria-hidden="true">
+          <span class="w-3 h-3 rounded-full bg-[#FF5F57]"></span>
+          <span class="w-3 h-3 rounded-full bg-[#FFBD2E]"></span>
+          <span class="w-3 h-3 rounded-full bg-[#28C840]"></span>
+          <span class="ml-4 text-xs text-gray-400 dark:text-gray-500 font-medium select-none">Mino — untitled.md</span>
+        </div>
+        <!-- Placeholder content -->
+        <div class="relative w-full aspect-[16/10] bg-gradient-to-br from-slate-800 via-slate-700 to-slate-900" aria-hidden="true">
+          <!-- Simulated sidebar -->
+          <div class="absolute inset-y-0 left-0 w-48 bg-slate-800/80 border-r border-slate-600/40 p-4 hidden sm:block">
+            <div class="space-y-2.5">
+              <div class="h-2.5 w-24 rounded bg-slate-600/50"></div>
+              <div class="h-2.5 w-20 rounded bg-slate-600/30 ml-3"></div>
+              <div class="h-2.5 w-28 rounded bg-slate-600/30 ml-3"></div>
+              <div class="h-2.5 w-16 rounded bg-slate-600/50"></div>
+              <div class="h-2.5 w-20 rounded bg-slate-600/30 ml-3"></div>
+              <div class="h-2.5 w-24 rounded bg-slate-600/30 ml-3"></div>
+              <div class="h-2.5 w-20 rounded bg-slate-600/50"></div>
+            </div>
+          </div>
+          <!-- Simulated editor content -->
+          <div class="absolute inset-0 sm:left-48 p-6 sm:p-8">
+            <div class="space-y-3 max-w-lg">
+              <div class="h-4 w-40 rounded bg-brand/30"></div>
+              <div class="h-2.5 w-full rounded bg-slate-600/20"></div>
+              <div class="h-2.5 w-5/6 rounded bg-slate-600/20"></div>
+              <div class="h-2.5 w-full rounded bg-slate-600/20"></div>
+              <div class="h-2.5 w-3/4 rounded bg-slate-600/20"></div>
+              <div class="mt-5 h-3 w-32 rounded bg-accent/30"></div>
+              <div class="h-2.5 w-full rounded bg-slate-600/20"></div>
+              <div class="h-2.5 w-4/6 rounded bg-slate-600/20"></div>
+              <div class="mt-5 rounded-lg bg-slate-800/60 p-3">
+                <div class="h-2.5 w-20 rounded bg-emerald-400/30 mb-2"></div>
+                <div class="h-2.5 w-full rounded bg-slate-600/20"></div>
+                <div class="h-2.5 w-3/4 rounded bg-slate-600/20"></div>
+              </div>
+            </div>
+          </div>
+          <!-- Center label -->
+          <div class="absolute inset-0 flex items-center justify-center pointer-events-none">
+            <div class="text-center bg-slate-900/60 backdrop-blur-sm rounded-lg px-6 py-4">
+              <svg class="w-10 h-10 mx-auto mb-2 text-white/40" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6.827 6.175A2.31 2.31 0 015.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.507 2.25 9.574V18a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 00-1.134-.175 2.31 2.31 0 01-1.64-1.055l-.822-1.316a2.192 2.192 0 00-1.736-1.039 48.774 48.774 0 00-5.232 0 2.192 2.192 0 00-1.736 1.039l-.821 1.316z"/><path stroke-linecap="round" stroke-linejoin="round" d="M16.5 12.75a4.5 4.5 0 11-9 0 4.5 4.5 0 019 0z"/></svg>
+              <p class="text-sm text-white/50 font-medium" data-zh="截图占位" data-en="Screenshot Placeholder">截图占位</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Shortcuts -->
+  <section id="shortcuts" class="py-20 bg-white dark:bg-[#1e1e1e]">
+    <div class="max-w-4xl mx-auto px-6">
+      <!-- Section Title -->
+      <div class="text-center mb-12">
+        <h2 class="text-3xl sm:text-4xl font-bold text-gray-800 dark:text-gray-100" data-zh="快捷键" data-en="Keyboard Shortcuts">快捷键</h2>
+        <div class="mx-auto mt-3 w-12 h-1 rounded-full bg-gradient-to-r from-brand to-accent"></div>
+      </div>
+
+      <!-- Shortcuts grid -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-4">
+        <!-- Ctrl+N -->
+        <div class="shortcut-item flex items-center gap-3 py-2.5 px-3 rounded-lg hover:bg-slate-50 dark:hover:bg-[#2a2a2a] transition-colors">
+          <div class="shortcut-keys flex items-center gap-1 shrink-0">
+            <kbd class="key-badge">Ctrl</kbd>
+            <span class="text-xs text-gray-400 dark:text-gray-600" aria-hidden="true">+</span>
+            <kbd class="key-badge">N</kbd>
+          </div>
+          <span class="text-sm text-gray-600 dark:text-gray-400" data-zh="新建窗口" data-en="New Window">新建窗口</span>
+        </div>
+        <!-- Ctrl+O -->
+        <div class="shortcut-item flex items-center gap-3 py-2.5 px-3 rounded-lg hover:bg-slate-50 dark:hover:bg-[#2a2a2a] transition-colors">
+          <div class="shortcut-keys flex items-center gap-1 shrink-0">
+            <kbd class="key-badge">Ctrl</kbd>
+            <span class="text-xs text-gray-400 dark:text-gray-600" aria-hidden="true">+</span>
+            <kbd class="key-badge">O</kbd>
+          </div>
+          <span class="text-sm text-gray-600 dark:text-gray-400" data-zh="打开文件" data-en="Open File">打开文件</span>
+        </div>
+        <!-- Ctrl+S -->
+        <div class="shortcut-item flex items-center gap-3 py-2.5 px-3 rounded-lg hover:bg-slate-50 dark:hover:bg-[#2a2a2a] transition-colors">
+          <div class="shortcut-keys flex items-center gap-1 shrink-0">
+            <kbd class="key-badge">Ctrl</kbd>
+            <span class="text-xs text-gray-400 dark:text-gray-600" aria-hidden="true">+</span>
+            <kbd class="key-badge">S</kbd>
+          </div>
+          <span class="text-sm text-gray-600 dark:text-gray-400" data-zh="保存" data-en="Save">保存</span>
+        </div>
+        <!-- Ctrl+Z -->
+        <div class="shortcut-item flex items-center gap-3 py-2.5 px-3 rounded-lg hover:bg-slate-50 dark:hover:bg-[#2a2a2a] transition-colors">
+          <div class="shortcut-keys flex items-center gap-1 shrink-0">
+            <kbd class="key-badge">Ctrl</kbd>
+            <span class="text-xs text-gray-400 dark:text-gray-600" aria-hidden="true">+</span>
+            <kbd class="key-badge">Z</kbd>
+          </div>
+          <span class="text-sm text-gray-600 dark:text-gray-400" data-zh="撤销" data-en="Undo">撤销</span>
+        </div>
+        <!-- Ctrl+Y -->
+        <div class="shortcut-item flex items-center gap-3 py-2.5 px-3 rounded-lg hover:bg-slate-50 dark:hover:bg-[#2a2a2a] transition-colors">
+          <div class="shortcut-keys flex items-center gap-1 shrink-0">
+            <kbd class="key-badge">Ctrl</kbd>
+            <span class="text-xs text-gray-400 dark:text-gray-600" aria-hidden="true">+</span>
+            <kbd class="key-badge">Y</kbd>
+          </div>
+          <span class="text-sm text-gray-600 dark:text-gray-400" data-zh="重做" data-en="Redo">重做</span>
+        </div>
+        <!-- Ctrl+B -->
+        <div class="shortcut-item flex items-center gap-3 py-2.5 px-3 rounded-lg hover:bg-slate-50 dark:hover:bg-[#2a2a2a] transition-colors">
+          <div class="shortcut-keys flex items-center gap-1 shrink-0">
+            <kbd class="key-badge">Ctrl</kbd>
+            <span class="text-xs text-gray-400 dark:text-gray-600" aria-hidden="true">+</span>
+            <kbd class="key-badge">B</kbd>
+          </div>
+          <span class="text-sm text-gray-600 dark:text-gray-400" data-zh="加粗" data-en="Bold">加粗</span>
+        </div>
+        <!-- Ctrl+I -->
+        <div class="shortcut-item flex items-center gap-3 py-2.5 px-3 rounded-lg hover:bg-slate-50 dark:hover:bg-[#2a2a2a] transition-colors">
+          <div class="shortcut-keys flex items-center gap-1 shrink-0">
+            <kbd class="key-badge">Ctrl</kbd>
+            <span class="text-xs text-gray-400 dark:text-gray-600" aria-hidden="true">+</span>
+            <kbd class="key-badge">I</kbd>
+          </div>
+          <span class="text-sm text-gray-600 dark:text-gray-400" data-zh="斜体" data-en="Italic">斜体</span>
+        </div>
+        <!-- Ctrl+F -->
+        <div class="shortcut-item flex items-center gap-3 py-2.5 px-3 rounded-lg hover:bg-slate-50 dark:hover:bg-[#2a2a2a] transition-colors">
+          <div class="shortcut-keys flex items-center gap-1 shrink-0">
+            <kbd class="key-badge">Ctrl</kbd>
+            <span class="text-xs text-gray-400 dark:text-gray-600" aria-hidden="true">+</span>
+            <kbd class="key-badge">F</kbd>
+          </div>
+          <span class="text-sm text-gray-600 dark:text-gray-400" data-zh="查找" data-en="Find">查找</span>
+        </div>
+        <!-- Ctrl+/ -->
+        <div class="shortcut-item flex items-center gap-3 py-2.5 px-3 rounded-lg hover:bg-slate-50 dark:hover:bg-[#2a2a2a] transition-colors">
+          <div class="shortcut-keys flex items-center gap-1 shrink-0">
+            <kbd class="key-badge">Ctrl</kbd>
+            <span class="text-xs text-gray-400 dark:text-gray-600" aria-hidden="true">+</span>
+            <kbd class="key-badge">/</kbd>
+          </div>
+          <span class="text-sm text-gray-600 dark:text-gray-400" data-zh="源码模式" data-en="Source Mode">源码模式</span>
+        </div>
+        <!-- Ctrl+Shift+/ -->
+        <div class="shortcut-item flex items-center gap-3 py-2.5 px-3 rounded-lg hover:bg-slate-50 dark:hover:bg-[#2a2a2a] transition-colors">
+          <div class="shortcut-keys flex items-center gap-1 shrink-0">
+            <kbd class="key-badge">Ctrl</kbd>
+            <span class="text-xs text-gray-400 dark:text-gray-600" aria-hidden="true">+</span>
+            <kbd class="key-badge">Shift</kbd>
+            <span class="text-xs text-gray-400 dark:text-gray-600" aria-hidden="true">+</span>
+            <kbd class="key-badge">/</kbd>
+          </div>
+          <span class="text-sm text-gray-600 dark:text-gray-400" data-zh="双栏模式" data-en="Dual-Pane">双栏模式</span>
+        </div>
+      </div>
+    </div>
+  </section>
+  <!-- Tech Stack -->
+  <section id="tech-stack" class="py-20 bg-white dark:bg-[#1e1e1e]">
+    <div class="max-w-4xl mx-auto px-6">
+      <!-- Section Title -->
+      <div class="text-center mb-12">
+        <h2 class="text-3xl sm:text-4xl font-bold text-gray-800 dark:text-gray-100" data-zh="技术栈" data-en="Tech Stack">技术栈</h2>
+        <div class="mx-auto mt-3 w-12 h-1 rounded-full bg-gradient-to-r from-brand to-accent"></div>
+        <p class="mt-4 text-base text-gray-500 dark:text-gray-400" data-zh="现代、高效、经过验证的技术组合" data-en="Modern, efficient, and proven technology stack">现代、高效、经过验证的技术组合</p>
+      </div>
+
+      <!-- Tech Grid -->
+      <div class="grid grid-cols-2 sm:grid-cols-3 gap-4 sm:gap-6">
+        <!-- Tauri v2 -->
+        <div class="tech-item group flex items-center gap-3 p-4 sm:p-5 rounded-xl border border-gray-200/80 dark:border-[#373737]/80 bg-white dark:bg-[#252525] hover:border-brand/40 hover:shadow-md hover:shadow-brand/5 transition-all duration-300">
+          <span class="w-10 h-10 shrink-0 flex items-center justify-center rounded-lg bg-gradient-to-br from-yellow-400/20 to-orange-400/20 text-yellow-600">
+            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+          </span>
+          <div>
+            <p class="text-sm font-semibold text-gray-800 dark:text-gray-100">Tauri v2</p>
+            <p class="text-xs text-gray-400 dark:text-gray-500" data-zh="桌面容器" data-en="Desktop Shell">桌面容器</p>
+          </div>
+        </div>
+
+        <!-- Svelte 5 -->
+        <div class="tech-item group flex items-center gap-3 p-4 sm:p-5 rounded-xl border border-gray-200/80 dark:border-[#373737]/80 bg-white dark:bg-[#252525] hover:border-brand/40 hover:shadow-md hover:shadow-brand/5 transition-all duration-300">
+          <span class="w-10 h-10 shrink-0 flex items-center justify-center rounded-lg bg-gradient-to-br from-orange-400/20 to-red-400/20 text-orange-500">
+            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M20.12 3.88a4.27 4.27 0 00-6 0L3.88 14.12a4.27 4.27 0 000 6l2.12 2.12a4.27 4.27 0 006 0L20.12 9.88a4.27 4.27 0 000-6z"/></svg>
+          </span>
+          <div>
+            <p class="text-sm font-semibold text-gray-800 dark:text-gray-100">Svelte 5</p>
+            <p class="text-xs text-gray-400 dark:text-gray-500" data-zh="前端框架" data-en="Frontend Framework">前端框架</p>
+          </div>
+        </div>
+
+        <!-- Milkdown v7 -->
+        <div class="tech-item group flex items-center gap-3 p-4 sm:p-5 rounded-xl border border-gray-200/80 dark:border-[#373737]/80 bg-white dark:bg-[#252525] hover:border-brand/40 hover:shadow-md hover:shadow-brand/5 transition-all duration-300">
+          <span class="w-10 h-10 shrink-0 flex items-center justify-center rounded-lg bg-gradient-to-br from-brand/20 to-indigo-400/20 text-brand">
+            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6zM6 20V4h7v5h5v11H6zm2-6h8v2H8v-2zm0-4h8v2H8v-2z"/></svg>
+          </span>
+          <div>
+            <p class="text-sm font-semibold text-gray-800 dark:text-gray-100">Milkdown v7</p>
+            <p class="text-xs text-gray-400 dark:text-gray-500" data-zh="编辑器核心" data-en="Editor Core">编辑器核心</p>
+          </div>
+        </div>
+
+        <!-- CodeMirror 6 -->
+        <div class="tech-item group flex items-center gap-3 p-4 sm:p-5 rounded-xl border border-gray-200/80 dark:border-[#373737]/80 bg-white dark:bg-[#252525] hover:border-brand/40 hover:shadow-md hover:shadow-brand/5 transition-all duration-300">
+          <span class="w-10 h-10 shrink-0 flex items-center justify-center rounded-lg bg-gradient-to-br from-rose-400/20 to-pink-400/20 text-rose-500">
+            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M9.4 16.6L4.8 12l4.6-4.6L8 6l-6 6 6 6 1.4-1.4zm5.2 0l4.6-4.6-4.6-4.6L16 6l6 6-6 6-1.4-1.4z"/></svg>
+          </span>
+          <div>
+            <p class="text-sm font-semibold text-gray-800 dark:text-gray-100">CodeMirror 6</p>
+            <p class="text-xs text-gray-400 dark:text-gray-500" data-zh="源码编辑" data-en="Source Editor">源码编辑</p>
+          </div>
+        </div>
+
+        <!-- KaTeX -->
+        <div class="tech-item group flex items-center gap-3 p-4 sm:p-5 rounded-xl border border-gray-200/80 dark:border-[#373737]/80 bg-white dark:bg-[#252525] hover:border-brand/40 hover:shadow-md hover:shadow-brand/5 transition-all duration-300">
+          <span class="w-10 h-10 shrink-0 flex items-center justify-center rounded-lg bg-gradient-to-br from-teal-400/20 to-emerald-400/20 text-teal-600">
+            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M5 3h14v2H5V3zm0 4h14v2H5V7zm0 4h10v2H5v-2zm0 4h12v2H5v-2zm0 4h8v2H5v-2z"/></svg>
+          </span>
+          <div>
+            <p class="text-sm font-semibold text-gray-800 dark:text-gray-100">KaTeX</p>
+            <p class="text-xs text-gray-400 dark:text-gray-500" data-zh="数学公式" data-en="Math Typesetting">数学公式</p>
+          </div>
+        </div>
+
+        <!-- Mermaid -->
+        <div class="tech-item group flex items-center gap-3 p-4 sm:p-5 rounded-xl border border-gray-200/80 dark:border-[#373737]/80 bg-white dark:bg-[#252525] hover:border-brand/40 hover:shadow-md hover:shadow-brand/5 transition-all duration-300">
+          <span class="w-10 h-10 shrink-0 flex items-center justify-center rounded-lg bg-gradient-to-br from-accent/20 to-cyan-400/20 text-accent">
+            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M3 3h18v2H3V3zm3 4h12v2H6V7zm-3 4h18v2H3v-2zm3 4h12v2H6v-2zm-3 4h18v2H3v-2z"/></svg>
+          </span>
+          <div>
+            <p class="text-sm font-semibold text-gray-800 dark:text-gray-100">Mermaid</p>
+            <p class="text-xs text-gray-400 dark:text-gray-500" data-zh="图表渲染" data-en="Diagram Rendering">图表渲染</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Download -->
+  <section id="download" class="py-20 bg-gradient-to-br from-brand via-brand-dark to-slate-800 dark:from-[#2a5a8a] dark:via-[#1e3a5f] dark:to-[#151515]">
+    <div class="max-w-3xl mx-auto px-6 text-center">
+      <h2 class="text-3xl sm:text-4xl font-bold text-white" data-zh="立即下载" data-en="Download Now">立即下载</h2>
+      <div class="mx-auto mt-3 w-12 h-1 rounded-full bg-white/30"></div>
+      <p class="mt-6 text-lg text-white/80" data-zh="免费、开源、轻量 — 为 Windows 打造" data-en="Free, open-source, lightweight — built for Windows">免费、开源、轻量 — 为 Windows 打造</p>
+
+      <!-- Version & Platform -->
+      <div class="mt-8 flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-6">
+        <div class="flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 backdrop-blur-sm border border-white/15">
+          <span class="w-2 h-2 rounded-full bg-accent"></span>
+          <span class="text-sm font-medium text-white/90">v0.1.0</span>
+        </div>
+        <div class="flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 backdrop-blur-sm border border-white/15">
+          <svg class="w-4 h-4 text-white/70" fill="currentColor" viewBox="0 0 24 24"><path d="M0 3.449L9.75 2.1v9.451H0m10.949-9.602L24 0v11.4H10.949M0 12.6h9.75v9.451L0 20.699M10.949 12.6H24V24l-12.9-1.801"/></svg>
+          <span class="text-sm font-medium text-white/90">Windows 10/11</span>
+        </div>
+      </div>
+
+      <!-- Download Button -->
+      <div class="mt-10">
+        <a href="https://github.com/MarioMinoDev/mino/releases" target="_blank" rel="noopener" class="download-btn inline-flex items-center justify-center gap-2.5 px-10 py-4 bg-white text-brand font-bold text-lg rounded-xl shadow-xl shadow-black/15 hover:shadow-2xl hover:shadow-black/20 hover:-translate-y-0.5 transition-all duration-300">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5m0 0l5-5m-5 5V3"/></svg>
+          <span data-zh="前往下载" data-en="Get Mino">前往下载</span>
+        </a>
+      </div>
+
+      <!-- System Requirements -->
+      <div class="mt-8 flex items-center justify-center gap-2 text-sm text-white/50">
+        <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+        <span data-zh="需要 WebView2 运行时（Windows 11 已内置）" data-en="Requires WebView2 runtime (bundled on Windows 11)">需要 WebView2 运行时（Windows 11 已内置）</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="py-10 bg-gray-900 dark:bg-[#111111]">
+    <div class="max-w-6xl mx-auto px-6">
+      <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
+        <!-- Left: Brand + Copyright -->
+        <div class="flex items-center gap-2.5">
+          <img src="assets/mino-logo.svg" alt="Mino logo" class="w-6 h-6 opacity-70" />
+          <span class="text-sm text-gray-400">Mino &copy; 2026</span>
+        </div>
+
+        <!-- Center: Tagline -->
+        <p class="text-sm text-gray-500" data-zh="用 ❤️ 打造" data-en="Made with ❤️">用 ❤️ 打造</p>
+
+        <!-- Right: Links -->
+        <div class="flex items-center gap-4 sm:gap-6 flex-wrap justify-center">
+          <a href="https://github.com/MarioMinoDev/mino" target="_blank" rel="noopener" class="text-sm text-gray-400 hover:text-white transition-colors">GitHub</a>
+          <span class="text-sm text-gray-500">MIT License</span>
+          <span class="text-sm text-gray-500" data-zh="作者：Mario" data-en="By Mario">作者：Mario</span>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Scroll to top button -->
+  <button id="scroll-to-top" aria-label="Scroll to top" aria-hidden="true" tabindex="-1">
+    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 15l7-7 7 7"/></svg>
+  </button>
+
+  <script src="js/main.js"></script>
+</body>
+</html>
